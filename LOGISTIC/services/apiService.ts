@@ -5,7 +5,7 @@ import type {
   ApiResponse
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.VITE_API_URL || 'http://localhost:5000';
 
 class ApiService {
   private baseUrl: string;
