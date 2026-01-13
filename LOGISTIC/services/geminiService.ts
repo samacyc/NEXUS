@@ -1,102 +1,104 @@
-import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { QuoteRequest, QuoteResponse } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Mock zip code database for demonstration
+const zipCodeData: Record<string, { city: string; state: string; lat: number; lng: number }> = {
+  "10001": { city: "New York", state: "NY", lat: 40.7128, lng: -74.0060 },
+  "90210": { city: "Beverly Hills", state: "CA", lat: 34.0901, lng: -118.4065 },
+  "60601": { city: "Chicago", state: "IL", lat: 41.8781, lng: -87.6298 },
+  "33101": { city: "Miami", state: "FL", lat: 25.7617, lng: -80.1918 },
+  "98101": { city: "Seattle", state: "WA", lat: 47.6062, lng: -122.3321 },
+  "75201": { city: "Dallas", state: "TX", lat: 32.7767, lng: -96.7970 },
+  "02101": { city: "Boston", state: "MA", lat: 42.3601, lng: -71.0589 },
+  "30301": { city: "Atlanta", state: "GA", lat: 33.7490, lng: -84.3880 },
+};
 
-const responseSchema: Schema = {
-  type: Type.OBJECT,
-  properties: {
-    origin: { type: Type.STRING, description: "City and State of origin" },
-    destination: { type: Type.STRING, description: "City and State of destination" },
-    originCoordinates: {
-       type: Type.OBJECT,
-       properties: {
-         lat: { type: Type.NUMBER, description: "Latitude of origin zip" },
-         lng: { type: Type.NUMBER, description: "Longitude of origin zip" }
-       },
-       required: ["lat", "lng"]
-    },
-    destinationCoordinates: {
-       type: Type.OBJECT,
-       properties: {
-         lat: { type: Type.NUMBER, description: "Latitude of destination zip" },
-         lng: { type: Type.NUMBER, description: "Longitude of destination zip" }
-       },
-       required: ["lat", "lng"]
-    },
-    distanceMiles: { type: Type.NUMBER, description: "Approximate distance in miles" },
-    routeOptimizationNotes: { type: Type.STRING, description: "A brief AI explanation of the chosen route efficiency (weather, traffic, hubs)." },
-    options: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          serviceLevel: { type: Type.STRING, description: "e.g., Nexus Eco Ground, Nexus EV Express, Carbon Neutral Air" },
-          price: { type: Type.NUMBER, description: "Cost in USD" },
-          currency: { type: Type.STRING, description: "Always USD" },
-          estimatedDays: { type: Type.NUMBER, description: "Days to deliver" },
-          carbonFootprint: { type: Type.STRING, description: "e.g., '0kg (EV)', '12kg (Offset)'" },
-          aiAnalysis: { type: Type.STRING, description: "Why this option is good (e.g., 'Most Sustainable', 'Fastest Green Option')" },
-        },
-        required: ["serviceLevel", "price", "currency", "estimatedDays", "carbonFootprint", "aiAnalysis"],
-      },
-    },
-  },
-  required: ["origin", "destination", "originCoordinates", "destinationCoordinates", "distanceMiles", "options", "routeOptimizationNotes"],
+// Calculate distance between two coordinates using Haversine formula
+const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 3959; // Earth's radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+// Get location info from zip code
+const getLocationFromZip = (zip: string) => {
+  // Use exact match if available
+  if (zipCodeData[zip]) {
+    return zipCodeData[zip];
+  }
+
+  // Otherwise generate approximate coordinates based on zip code prefix
+  const prefix = zip.substring(0, 1);
+  const mockData: Record<string, { city: string; state: string; lat: number; lng: number }> = {
+    "0": { city: "Boston Area", state: "MA", lat: 42.3601, lng: -71.0589 },
+    "1": { city: "New York Area", state: "NY", lat: 40.7128, lng: -74.0060 },
+    "2": { city: "Washington Area", state: "DC", lat: 38.9072, lng: -77.0369 },
+    "3": { city: "Atlanta Area", state: "GA", lat: 33.7490, lng: -84.3880 },
+    "4": { city: "Louisville Area", state: "KY", lat: 38.2527, lng: -85.7585 },
+    "5": { city: "Minneapolis Area", state: "MN", lat: 44.9778, lng: -93.2650 },
+    "6": { city: "Chicago Area", state: "IL", lat: 41.8781, lng: -87.6298 },
+    "7": { city: "Dallas Area", state: "TX", lat: 32.7767, lng: -96.7970 },
+    "8": { city: "Denver Area", state: "CO", lat: 39.7392, lng: -104.9903 },
+    "9": { city: "Los Angeles Area", state: "CA", lat: 34.0522, lng: -118.2437 },
+  };
+
+  return mockData[prefix] || { city: "Unknown", state: "US", lat: 39.8283, lng: -98.5795 };
 };
 
 export const generateShippingQuote = async (request: QuoteRequest): Promise<QuoteResponse> => {
-  const model = "gemini-3-flash-preview";
-  
-  const prompt = `
-    Act as an advanced logistics pricing engine for "Nexus Logistics", a sustainable, B2B shipping carrier.
-    Generate a realistic shipping quote for a package with the following details:
-    - Origin Zip: ${request.originZip}
-    - Destination Zip: ${request.destZip}
-    - Weight: ${request.weight} lbs
-    - Dimensions: ${request.dimensions}
-    - Package Type: ${request.packageType}
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 800));
 
-    Calculate approximate coordinates (latitude/longitude) for the origin and destination zip codes for mapping purposes.
-    
-    Provide 3 distinct shipping options that emphasize sustainability:
-    1. Nexus Eco Ground (Consolidated, efficient, uses rail/hybrid)
-    2. Nexus EV Express (Electric Vehicle last mile, balanced speed)
-    3. Nexus Priority Zero (Air freight with 100% carbon offsets included)
+  const origin = getLocationFromZip(request.originZip);
+  const destination = getLocationFromZip(request.destZip);
 
-    Simulate real-world logistics logic (distance, weight, zones) for pricing.
-    The 'routeOptimizationNotes' should sound technical and eco-conscious.
-  `;
+  const distanceMiles = Math.round(
+    calculateDistance(origin.lat, origin.lng, destination.lat, destination.lng)
+  );
 
-  try {
-    const result = await ai.models.generateContent({
-      model,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
-        temperature: 0.4,
-      },
-    });
+  // Calculate base price based on distance and weight
+  const basePrice = (distanceMiles * 0.012) + (request.weight * 0.15);
 
-    const text = result.text;
-    if (!text) throw new Error("No response from AI");
-    
-    return JSON.parse(text) as QuoteResponse;
-  } catch (error) {
-    console.error("Gemini Quote Error:", error);
-    // Fallback mock data
-    return {
-      origin: "New York, NY",
-      destination: "Los Angeles, CA",
-      originCoordinates: { lat: 40.7128, lng: -74.0060 },
-      destinationCoordinates: { lat: 34.0522, lng: -118.2437 },
-      distanceMiles: 2789,
-      routeOptimizationNotes: "AI sustainability engine temporarily unavailable. Showing standard cached estimates.",
-      options: [
-        { serviceLevel: "Nexus Eco Ground", price: 15.50, currency: "USD", estimatedDays: 5, carbonFootprint: "4kg", aiAnalysis: "Best Value" },
-        { serviceLevel: "Nexus EV Express", price: 45.00, currency: "USD", estimatedDays: 2, carbonFootprint: "0kg (EV)", aiAnalysis: "Zero Emission" },
-      ],
-    };
-  }
+  // Generate shipping options
+  const options = [
+    {
+      serviceLevel: "Nexus Eco Ground",
+      price: Math.round(basePrice * 0.8 * 100) / 100,
+      currency: "USD",
+      estimatedDays: Math.ceil(distanceMiles / 500) + 2,
+      carbonFootprint: `${Math.round(distanceMiles * 0.002)}kg`,
+      aiAnalysis: "Best Value"
+    },
+    {
+      serviceLevel: "Nexus EV Express",
+      price: Math.round(basePrice * 1.5 * 100) / 100,
+      currency: "USD",
+      estimatedDays: Math.ceil(distanceMiles / 750) + 1,
+      carbonFootprint: "0kg (EV)",
+      aiAnalysis: "Zero Emission"
+    },
+    {
+      serviceLevel: "Nexus Priority Zero",
+      price: Math.round(basePrice * 2.5 * 100) / 100,
+      currency: "USD",
+      estimatedDays: 1,
+      carbonFootprint: "0kg (Offset)",
+      aiAnalysis: "Fastest Green Option"
+    }
+  ];
+
+  return {
+    origin: `${origin.city}, ${origin.state}`,
+    destination: `${destination.city}, ${destination.state}`,
+    originCoordinates: { lat: origin.lat, lng: origin.lng },
+    destinationCoordinates: { lat: destination.lat, lng: destination.lng },
+    distanceMiles,
+    routeOptimizationNotes: `Route optimized for ${distanceMiles} miles using sustainable multi-modal transportation. Electric vehicle delivery prioritized where available. Carbon offsets included in premium tiers.`,
+    options
+  };
 };
