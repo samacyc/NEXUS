@@ -6,7 +6,7 @@ The LOGISTIC frontend is now connected to the backend API for real-time parcel t
 ## Configuration
 
 ### Backend API
-- **Base URL**: `http://localhost:5000`
+- **Base URL**: `http://localhost:4000`
 - **API Endpoints**:
   - `GET /api/health` - Health check
   - `GET /api/parcels` - Get all parcels
@@ -26,7 +26,7 @@ The LOGISTIC frontend is now connected to the backend API for real-time parcel t
 ```bash
 cd backend
 npm run dev
-# Server will run on http://localhost:5000
+# Server will run on http://localhost:4000
 ```
 
 ### 2. Start the Frontend
@@ -57,7 +57,7 @@ node test-api.js
 
 Or use curl:
 ```bash
-curl -X POST http://localhost:5000/api/parcels \
+curl -X POST http://localhost:4000/api/parcels \
   -H "Content-Type: application/json" \
   -d '{
     "receiver": {
@@ -128,7 +128,7 @@ await apiService.updateParcelStatus('LT123456781234', {
 
 ### `.env` File
 ```
-VITE_API_URL=http://localhost:5000
+VITE_API_URL=http://localhost:4000
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
@@ -136,7 +136,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 ### Backend not connecting
 1. Ensure backend is running: `cd backend && npm run dev`
-2. Check backend port is 5000
+2. Check backend port is 4000
 3. Verify MongoDB is running
 
 ### CORS errors
