@@ -1,15 +1,16 @@
 import React from 'react';
 import { ArrowRightIcon } from './Icons';
+import BG1Image from '../BG1.jpg';
 
 export const Hero: React.FC = () => {
   return (
     <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-slate-900">
-      
+
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-         <img 
-            src="./BG1.jpg" 
-            alt="Logistics Network Background" 
+         <img
+            src={BG1Image}
+            alt="Logistics Network Background"
             className="w-full h-full object-cover opacity-10"
          />
       </div>

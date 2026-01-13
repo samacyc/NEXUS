@@ -27,6 +27,11 @@
     "allowSyntheticDefaultImports": true,
     "noEmit": false
   },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "images.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist",
