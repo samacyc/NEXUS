@@ -13,6 +13,9 @@ frontend/node_modules/
 # Build outputs
 frontend/dist/
 frontend/build/
+LOGISTIC/build/
+LOGISTIC/dist/
+
 
 # Logs
 npm-debug.log*
