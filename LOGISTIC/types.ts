@@ -32,6 +32,7 @@ export interface QuoteResponse {
 
 // Backend API Types
 export interface TrackingHistoryItem {
+  _id?: string;
   status: string;
   location: string;
   timestamp: string;

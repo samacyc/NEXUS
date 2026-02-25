@@ -164,6 +164,56 @@ router.delete('/:trackingNumber', async (req, res) => {
   }
 });
 
+// Delete a tracking history entry
+router.delete('/:trackingNumber/history/:historyId', async (req, res) => {
+  try {
+    const parcel = await Parcel.findOne({
+      trackingNumber: req.params.trackingNumber.toUpperCase()
+    });
+
+    if (!parcel) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parcel not found'
+      });
+    }
+
+    // Find the tracking history entry
+    const historyEntry = parcel.trackingHistory.id(req.params.historyId);
+
+    if (!historyEntry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tracking history entry not found'
+      });
+    }
+
+    // Don't allow deleting if it's the only history entry
+    if (parcel.trackingHistory.length === 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete the only tracking history entry'
+      });
+    }
+
+    // Remove the entry
+    historyEntry.deleteOne();
+    await parcel.save();
+
+    res.json({
+      success: true,
+      message: 'Tracking history entry deleted successfully',
+      data: parcel
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting tracking history entry',
+      error: error.message
+    });
+  }
+});
+
 // Trigger automatic status updates (Admin)
 router.post('/auto-update/trigger', async (req, res) => {
   try {

@@ -15,6 +15,7 @@ export const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [deletingHistoryId, setDeletingHistoryId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     status: parcel.status,
     location: parcel.currentLocation,
@@ -51,6 +52,32 @@ export const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
       setError(err.message || 'Failed to update parcel status');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteHistory = async (historyId: string) => {
+    if (!historyId) return;
+
+    if (parcel.trackingHistory.length <= 1) {
+      setError('Cannot delete the only tracking history entry');
+      return;
+    }
+
+    const confirmed = window.confirm('Are you sure you want to delete this tracking update?');
+    if (!confirmed) return;
+
+    setDeletingHistoryId(historyId);
+    setError('');
+
+    try {
+      const response = await apiService.deleteTrackingHistory(parcel.trackingNumber, historyId);
+      if (response.success) {
+        onSuccess();
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete tracking history');
+    } finally {
+      setDeletingHistoryId(null);
     }
   };
 
@@ -193,26 +220,50 @@ export const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
             <h4 className="text-sm font-semibold text-slate-700 mb-3">
               Recent History ({parcel.trackingHistory.length} events)
             </h4>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+            <div className="space-y-2 max-h-60 overflow-y-auto">
               {parcel.trackingHistory
                 .slice()
                 .reverse()
-                .slice(0, 3)
                 .map((event, index) => (
-                  <div key={index} className="text-xs">
+                  <div key={event._id || index} className="text-xs group">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-slate-400"></div>
                       <span className="font-medium text-slate-900">
                         {event.status.replace('_', ' ').toUpperCase()}
                       </span>
                       <span className="text-slate-500">- {event.location}</span>
+                      {event._id && parcel.trackingHistory.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteHistory(event._id!)}
+                          disabled={deletingHistoryId === event._id}
+                          className="ml-auto text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+                          title="Delete this update"
+                        >
+                          {deletingHistoryId === event._id ? (
+                            <span className="text-xs">Deleting...</span>
+                          ) : (
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
                     </div>
                     {event.notes && (
                       <div className="ml-4 text-slate-600">{event.notes}</div>
                     )}
+                    <div className="ml-4 text-slate-400 text-[10px]">
+                      {new Date(event.timestamp).toLocaleString()}
+                    </div>
                   </div>
                 ))}
             </div>
+            {parcel.trackingHistory.length > 1 && (
+              <p className="text-xs text-slate-500 mt-2">
+                Hover over entries to see delete option
+              </p>
+            )}
           </div>
 
           {/* Actions */}

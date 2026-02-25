@@ -81,6 +81,16 @@ class ApiService {
     });
   }
 
+  // Delete a tracking history entry
+  async deleteTrackingHistory(
+    trackingNumber: string,
+    historyId: string
+  ): Promise<ApiResponse<Parcel>> {
+    return this.request(`/api/parcels/${trackingNumber.toUpperCase()}/history/${historyId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Trigger automatic status updates
   async triggerAutoUpdate(): Promise<ApiResponse<any>> {
     return this.request('/api/parcels/auto-update/trigger', {
