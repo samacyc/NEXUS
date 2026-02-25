@@ -167,7 +167,7 @@ export const ParcelList: React.FC<ParcelListProps> = ({
                     {parcel.currentLocation}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                    {parcel.weight} kg
+                    {parcel.weight} lb
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
                     {formatDate(parcel.createdAt)}

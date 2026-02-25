@@ -223,7 +223,7 @@ export const TrackingSection: React.FC = () => {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <span className="text-slate-500">Weight:</span>
-                    <p className="font-medium text-slate-900">{parcelData.weight} kg</p>
+                    <p className="font-medium text-slate-900">{parcelData.weight} lb</p>
                   </div>
                   {parcelData.receiver && (
                     <>

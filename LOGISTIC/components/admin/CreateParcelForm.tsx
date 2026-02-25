@@ -198,7 +198,7 @@ export const CreateParcelForm: React.FC<CreateParcelFormProps> = ({ onSuccess })
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Weight (kg) <span className="text-red-600">*</span>
+                Weight (lb) <span className="text-red-600">*</span>
               </label>
               <input
                 type="number"

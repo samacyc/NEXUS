@@ -58,7 +58,7 @@ The main dashboard displays all parcels in a responsive table with the following
 - **Receiver**: Name and address
 - **Status**: Color-coded badge showing current status
 - **Location**: Current location of the parcel
-- **Weight**: Package weight in kilograms
+- **Weight**: Package weight in pounds
 - **Created**: Date and time the parcel was created
 - **Actions**: Update status or delete parcel
 
@@ -91,7 +91,7 @@ Form to create new parcels with the following sections:
 - Full address *
 
 #### Package Details
-- **Weight** (kg) * - Required
+- **Weight** (lb) * - Required
 - **Length** (cm) - Optional
 - **Width** (cm) - Optional
 - **Height** (cm) - Optional
