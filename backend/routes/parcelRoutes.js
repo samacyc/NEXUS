@@ -164,6 +164,53 @@ router.delete('/:trackingNumber', async (req, res) => {
   }
 });
 
+// Update a tracking history entry (e.g., remove location)
+router.patch('/:trackingNumber/history/:historyId', async (req, res) => {
+  try {
+    const { location, notes, status } = req.body;
+
+    const parcel = await Parcel.findOne({
+      trackingNumber: req.params.trackingNumber.toUpperCase()
+    });
+
+    if (!parcel) {
+      return res.status(404).json({
+        success: false,
+        message: 'Parcel not found'
+      });
+    }
+
+    // Find the tracking history entry
+    const historyEntry = parcel.trackingHistory.id(req.params.historyId);
+
+    if (!historyEntry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tracking history entry not found'
+      });
+    }
+
+    // Update the fields that are provided
+    if (location !== undefined) historyEntry.location = location;
+    if (notes !== undefined) historyEntry.notes = notes;
+    if (status !== undefined) historyEntry.status = status;
+
+    await parcel.save();
+
+    res.json({
+      success: true,
+      message: 'Tracking history entry updated successfully',
+      data: parcel
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error updating tracking history entry',
+      error: error.message
+    });
+  }
+});
+
 // Delete a tracking history entry
 router.delete('/:trackingNumber/history/:historyId', async (req, res) => {
   try {

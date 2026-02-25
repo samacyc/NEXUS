@@ -81,6 +81,18 @@ class ApiService {
     });
   }
 
+  // Update a tracking history entry
+  async updateTrackingHistory(
+    trackingNumber: string,
+    historyId: string,
+    updates: { location?: string; notes?: string; status?: string }
+  ): Promise<ApiResponse<Parcel>> {
+    return this.request(`/api/parcels/${trackingNumber.toUpperCase()}/history/${historyId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
   // Delete a tracking history entry
   async deleteTrackingHistory(
     trackingNumber: string,

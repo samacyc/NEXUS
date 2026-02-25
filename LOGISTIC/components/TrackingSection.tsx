@@ -110,6 +110,18 @@ export const TrackingSection: React.FC = () => {
     }
   };
 
+  const getNextStepMessage = (status: string) => {
+    const nextSteps: Record<string, string> = {
+      pending: 'Next: Package will be picked up from sender',
+      picked_up: 'Next: Package will be in transit to destination',
+      in_transit: 'Next: Package will be out for delivery',
+      out_for_delivery: 'Next: Package will be delivered',
+      failed: 'Next: Delivery will be reattempted',
+      delivered: 'Package has been delivered'
+    };
+    return nextSteps[status] || 'Tracking your package...';
+  };
+
   const copyTrackingLink = () => {
     if (!parcelData) return;
     const trackingUrl = `${window.location.origin}/track/${parcelData.trackingNumber}`;
@@ -205,6 +217,18 @@ export const TrackingSection: React.FC = () => {
                 </div>
               </div>
 
+              {/* Next Step Recommendation */}
+              {parcelData.status !== 'delivered' && (
+                <div className="px-6 py-3 bg-blue-50 border-b border-blue-100">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                    <p className="text-sm font-medium text-blue-900">{getNextStepMessage(parcelData.status)}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Tracking Timeline */}
               <div className="px-6 py-6">
                 {Object.entries(groupByDate(parcelData.trackingHistory.slice().reverse())).map(([dateKey, items], groupIndex) => (
@@ -242,7 +266,7 @@ export const TrackingSection: React.FC = () => {
 
                           {/* Location */}
                           <div className="w-32 flex-shrink-0 text-right text-sm text-slate-600 uppercase">
-                            {item.location}
+                            {item.location || <span className="text-slate-400 italic normal-case">(No location)</span>}
                           </div>
                         </div>
                       ))}
