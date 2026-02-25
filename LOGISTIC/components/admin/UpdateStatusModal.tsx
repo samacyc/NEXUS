@@ -19,6 +19,7 @@ export const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
     status: parcel.status,
     location: parcel.currentLocation,
     notes: '',
+    timestamp: '',
   });
 
   const statusOptions: { value: ParcelStatus; label: string }[] = [
@@ -40,6 +41,7 @@ export const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
         status: formData.status as ParcelStatus,
         location: formData.location,
         notes: formData.notes || undefined,
+        timestamp: formData.timestamp || undefined,
       });
 
       if (response.success) {
@@ -152,6 +154,22 @@ export const UpdateStatusModal: React.FC<UpdateStatusModalProps> = ({
               />
               <p className="mt-1 text-xs text-slate-500">
                 Leave empty to keep current location
+              </p>
+            </div>
+
+            {/* Timestamp */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Update Date & Time
+              </label>
+              <input
+                type="datetime-local"
+                value={formData.timestamp}
+                onChange={(e) => setFormData({ ...formData, timestamp: e.target.value })}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none"
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Leave empty to use current date & time
               </p>
             </div>
 

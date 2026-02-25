@@ -75,10 +75,10 @@ router.get('/track/:trackingNumber', async (req, res) => {
   }
 });
 
-// Update parcel status
+// Update parcel status (with optional custom timestamp)
 router.put('/:trackingNumber/status', async (req, res) => {
   try {
-    const { status, location, notes } = req.body;
+    const { status, location, notes, timestamp } = req.body;
 
     const parcel = await Parcel.findOne({
       trackingNumber: req.params.trackingNumber.toUpperCase()
@@ -91,16 +91,35 @@ router.put('/:trackingNumber/status', async (req, res) => {
       });
     }
 
+    // Validate timestamp if provided
+    let customTimestamp = null;
+    if (timestamp) {
+      customTimestamp = new Date(timestamp);
+      if (isNaN(customTimestamp.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid timestamp format. Use ISO 8601 format (e.g., 2024-01-01T10:30:00Z)'
+        });
+      }
+    }
+
     // Update current status and location
     parcel.status = status;
     if (location) parcel.currentLocation = location;
 
-    // Add to tracking history
-    parcel.trackingHistory.push({
+    // Add to tracking history with custom timestamp if provided
+    const historyEntry = {
       status,
       location: location || parcel.currentLocation,
       notes: notes || `Status updated to ${status}`
-    });
+    };
+
+    // If custom timestamp provided, use it; otherwise, let schema default (Date.now) handle it
+    if (customTimestamp) {
+      historyEntry.timestamp = customTimestamp;
+    }
+
+    parcel.trackingHistory.push(historyEntry);
 
     await parcel.save();
 

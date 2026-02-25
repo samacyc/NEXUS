@@ -85,6 +85,7 @@ export interface UpdateParcelStatusRequest {
   status: ParcelStatus;
   location?: string;
   notes?: string;
+  timestamp?: string;
 }
 
 export interface ApiResponse<T> {
